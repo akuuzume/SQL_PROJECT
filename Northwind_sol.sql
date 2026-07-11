@@ -234,3 +234,30 @@ select *,cast(numberPerCategory * 100.0 / SUM(numberPerCategory) OVER() as decim
 
 51
 
+with order_totals as(
+select OrderID,sum(UnitPrice*Quantity) as Total_Price from [Order Details] group by OrderID
+)
+,high_value as(
+ select *,
+ case 
+	when Total_Price>=10000 then 'Very High Value'
+	when Total_Price>=5000 and Total_Price< 10000 then 'High Value'
+	when Total_Price>=1000 and Total_Price< 5000 then 'Mid Value'
+	else 'Low Value'
+ end as Customer_Category
+ from order_totals
+)
+
+select o.CustomerID,c.CompanyName,ot.Total_Price,hv.Customer_Category from order_totals as ot left join high_value as hv on ot.OrderID=hv.OrderID left join Orders as o on ot.OrderID=o.OrderID left join customers as c on o.CustomerID=c.CustomerID
+
+52
+select distinct country from Suppliers union 
+select distinct country from Customers
+
+53
+SELECT s.Country AS SupplierCountry,c.Country AS CustomerCountry FROM (SELECT DISTINCT Country FROM Suppliers) as s FULL OUTER JOIN (SELECT DISTINCT Country FROM Customers) c ON s.Country = c.Country
+
+54
+
+SELECT ISNULL(s.Country,c.Country) as Country,isnull(s.TotalSuppliersPerCountry,0) as TotalSuppliersPerCountry ,isnull(c.TotalCustomersPerCountry,0) as TotalCustomersPerCountry FROM (SELECT DISTINCT count(*) as TotalSuppliersPerCountry, Country FROM Suppliers group by Country) as s FULL OUTER JOIN (SELECT DISTINCT count(*) as TotalCustomersPerCountry, Country FROM Customers group by Country) c ON s.Country = c.Country
+
