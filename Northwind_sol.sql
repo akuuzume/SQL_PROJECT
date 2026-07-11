@@ -193,7 +193,44 @@ TotalNumberOfOrders as(
 
 select lo.Employee_Name, tno.NumberofOrders,lo.NumberofLateOrders ,ROUND(CAST(lo.NumberofLateOrders AS DECIMAL(10,2)) / tno.NumberofOrders, 2) as PercentageLateOrders from LaterOrders as lo left join TotalNumberOfOrders as tno on lo.EmployeeID=tno.EmployeeID order by lo.NumberofLateOrders desc
 
-48
+48 and 49
+with order_totals as(
+select OrderID,sum(UnitPrice*Quantity) as Total_Price from [Order Details] group by OrderID
+)
+,high_value as(
+ select *,
+ case 
+	when Total_Price>=10000 then 'Very High Value'
+	when Total_Price>=5000 and Total_Price< 10000 then 'High Value'
+	when Total_Price>=1000 and Total_Price< 5000 then 'Mid Value'
+	else 'Low Value'
+ end as Customer_Category
+ from order_totals
+),
+orders_1996 as(
+select CustomerID, OrderID, OrderDate from Orders where YEAR(OrderDate)=1997
+)
+select * from high_value as h inner join orders_1996 as o on h.OrderID=o.OrderID  order by o.CustomerID DESC 
 
+50
+with order_totals as(
+select OrderID,sum(UnitPrice*Quantity) as Total_Price from [Order Details] group by OrderID
+)
+,high_value as(
+ select *,
+ case 
+	when Total_Price>=10000 then 'Very High Value'
+	when Total_Price>=5000 and Total_Price< 10000 then 'High Value'
+	when Total_Price>=1000 and Total_Price< 5000 then 'Mid Value'
+	else 'Low Value'
+ end as Customer_Category
+ from order_totals
+),
+numberPerCategory as(
+select Customer_Category,count(*) as numberPerCategory  from high_value  group by Customer_Category 
+)
 
+select *,cast(numberPerCategory * 100.0 / SUM(numberPerCategory) OVER() as decimal(5,2)) as PercentagePerCategory from numberPerCategory
+
+51
 
