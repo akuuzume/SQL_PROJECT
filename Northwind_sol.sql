@@ -172,5 +172,28 @@ TotalNumberOfOrders as(
 select e.EmployeeID,lo.Employee_Name, tno.NumberofOrders,IsNull(lo.NumberofLateOrders,0) as NumberofLateOrders from employees as e join LaterOrders as lo on e.EmployeeID=lo.EmployeeID left join TotalNumberOfOrders as tno on lo.EmployeeID=tno.EmployeeID order by lo.NumberofLateOrders desc
 
 46
+with LaterOrders as(
+	select (e.FirstName+' '+e.LastName) as Employee_Name,e.EmployeeID,count(*) as NumberofLateOrders from orders as o left join employees as e on o.EmployeeID=e.EmployeeID where RequiredDate<ShippedDate group by e.EmployeeID,(e.FirstName+' '+e.LastName) 
+),
+TotalNumberOfOrders as(
+	select (e.FirstName+' '+e.LastName) as Employee_Name,e.EmployeeID,count(*) as NumberofOrders from orders as o left join employees as e on o.EmployeeID=e.EmployeeID group by e.EmployeeID,(e.FirstName+' '+e.LastName) 
+)
+
+
+select lo.Employee_Name, tno.NumberofOrders,lo.NumberofLateOrders ,(lo.NumberofLateOrders*100.0/tno.NumberofOrders) as PercentageLateOrders from LaterOrders as lo left join TotalNumberOfOrders as tno on lo.EmployeeID=tno.EmployeeID order by lo.NumberofLateOrders desc
+
+47
+with LaterOrders as(
+	select (e.FirstName+' '+e.LastName) as Employee_Name,e.EmployeeID,count(*) as NumberofLateOrders from orders as o left join employees as e on o.EmployeeID=e.EmployeeID where RequiredDate<ShippedDate group by e.EmployeeID,(e.FirstName+' '+e.LastName) 
+),
+TotalNumberOfOrders as(
+	select (e.FirstName+' '+e.LastName) as Employee_Name,e.EmployeeID,count(*) as NumberofOrders from orders as o left join employees as e on o.EmployeeID=e.EmployeeID group by e.EmployeeID,(e.FirstName+' '+e.LastName) 
+)
+
+
+select lo.Employee_Name, tno.NumberofOrders,lo.NumberofLateOrders ,ROUND(CAST(lo.NumberofLateOrders AS DECIMAL(10,2)) / tno.NumberofOrders, 2) as PercentageLateOrders from LaterOrders as lo left join TotalNumberOfOrders as tno on lo.EmployeeID=tno.EmployeeID order by lo.NumberofLateOrders desc
+
+48
+
 
 
