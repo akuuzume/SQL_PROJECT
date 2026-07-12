@@ -261,3 +261,20 @@ SELECT s.Country AS SupplierCountry,c.Country AS CustomerCountry FROM (SELECT DI
 
 SELECT ISNULL(s.Country,c.Country) as Country,isnull(s.TotalSuppliersPerCountry,0) as TotalSuppliersPerCountry ,isnull(c.TotalCustomersPerCountry,0) as TotalCustomersPerCountry FROM (SELECT DISTINCT count(*) as TotalSuppliersPerCountry, Country FROM Suppliers group by Country) as s FULL OUTER JOIN (SELECT DISTINCT count(*) as TotalCustomersPerCountry, Country FROM Customers group by Country) c ON s.Country = c.Country
 
+55
+with firstDatePerCountry as(
+select ShipCountry,min(ShippedDate) as FirstShippedDate from Orders where ShippedDate is not null group by ShipCountry
+)
+select distinct o.ShipCountry,o.CustomerID,o.OrderID ,convert(date,o.ShippedDate) as ShippedDate from Orders as o left join firstDatePerCountry as fd on o.ShipCountry=fd.ShipCountry and o.ShippedDate=fd.FirstShippedDate order by o.ShipCountry
+
+
+56
+
+Select InitialOrder.CustomerID,InitialOrderID = InitialOrder.OrderID,InitialOrderDate = convert(date, InitialOrder.OrderDate),NextOrderID = NextOrder.OrderID,NextOrderDate = convert(date, NextOrder.OrderDate),DaysBetween = datediff(dd, InitialOrder.OrderDate, NextOrder.OrderDate)from Orders InitialOrder join Orders NextOrder
+on InitialOrder.CustomerID = NextOrder.CustomerID where InitialOrder.OrderID < NextOrder.OrderID and datediff(dd, InitialOrder.OrderDate, NextOrder.OrderDate) <= 5 Order by InitialOrder.CustomerID,InitialOrder.OrderID
+
+57
+With NextOrderDate as (
+Select CustomerID,OrderDate = convert(date, OrderDate),NextOrderDate =convert(date,Lead(OrderDate,1)OVER (Partition by CustomerID order by CustomerID, OrderDate))From Orders
+)
+Select CustomerID,OrderDate,NextOrderDate,DaysBetweenOrders = DateDiff (dd, OrderDate, NextOrderDate) From NextOrderDate Where DateDiff (dd, OrderDate, NextOrderDate) <= 5
