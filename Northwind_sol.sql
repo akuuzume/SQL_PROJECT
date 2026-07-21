@@ -74,7 +74,7 @@ select OrderID,sum(UnitPrice*Quantity) as Total_Price from [Order Details] group
 orders_1996 as(
 select CustomerID, OrderID, OrderDate from Orders where YEAR(OrderDate)=1996
 )
-select * from high_value as h inner join orders_1996 as o on h.OrderID=o.OrderID where h.Total_Price>=10000 order by Total_Price DESC ;
+select h.OrderID,o.CustomerID, h.Total_Price,h.Customer_Category from high_value as h inner join orders_1996 as o on h.OrderID=o.OrderID where h.Total_Price>=10000 order by Total_Price DESC ;
 
 with order_totals as(
 select OrderID,Total_Price=UnitPrice*Quantity from [Order Details]
@@ -82,7 +82,7 @@ select OrderID,Total_Price=UnitPrice*Quantity from [Order Details]
 customer_details as( 
 select c.CustomerID,c.CompanyName,o.OrderID from Customers as c inner join Orders as o on c.CustomerID=o.CustomerID
 )
-select cc.CustomerID,cc.CompanyName,sum(oo.Total_Price)  from order_totals as oo inner join customer_details as cc on cc.OrderID=oo.OrderID group by cc.CompanyName,cc.CustomerID having sum(oo.Total_Price)>=15000;
+select cc.CustomerID,cc.CompanyName,sum(oo.Total_Price)[Total_Price]  from order_totals as oo inner join customer_details as cc on cc.OrderID=oo.OrderID group by cc.CompanyName,cc.CustomerID having sum(oo.Total_Price)>=15000;
 
 with order_totals as(
 select OrderID,Total_Price=UnitPrice*Quantity,Total_Price_with_discount=UnitPrice*Quantity*(1-Discount) from [Order Details]
